@@ -11,4 +11,4 @@ The player can now dash with the shift key, using stamina.
 The ability to gather fruit and see them in your fruit wallet was added.
 Stamina and health bars added.
 
-![First Screenshot](/pics/First Screenshot - just added UI.png)
+![First Screenshot](./pics/First Screenshot - just added UI.png)
