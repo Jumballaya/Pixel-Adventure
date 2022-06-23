@@ -1,5 +1,4 @@
 export class Sprite {
-
   private image = new Image();
   private current = 0;
   private framesElapsed = 0;
@@ -23,18 +22,36 @@ export class Sprite {
   }
 
   static from(sprite: Sprite): Sprite {
-    return new Sprite(sprite.src, sprite.count, sprite.framesHold, sprite.scale, sprite.repeat, sprite.flipped);
+    return new Sprite(
+      sprite.src,
+      sprite.count,
+      sprite.framesHold,
+      sprite.scale,
+      sprite.repeat,
+      sprite.flipped
+    );
   }
 
   public getDimension() {
+    const frameWidth = this.image.width / this.count;
     return {
-      width: this.image.width * this.scale,
-      height: this.image.height * this.scale,
-    }
+      width: frameWidth * this.scale,
+      height: this.image.height * this.scale
+    };
+  }
+
+  public setDimensions(width: number, height: number) {
+    this.image.width = width;
+    this.image.height = height;
   }
 
   public setScale(s: number) {
     this.scale = s;
+  }
+
+  public setColor(c: string) {
+    this.src = c;
+    this.hasImage = false;
   }
 
   public reset() {
@@ -61,10 +78,14 @@ export class Sprite {
     ctx.fillRect(position.x, position.y, 100, 100);
   }
 
-
-  private drawImage(ctx: CanvasRenderingContext2D, position: DOMPoint, flip: boolean) {
+  private drawImage(
+    ctx: CanvasRenderingContext2D,
+    position: DOMPoint,
+    flip: boolean
+  ) {
     const frameWidth = this.image.width / this.count;
     const flipX = flip || this.flipped;
+    const transform = ctx.getTransform();
     if (flipX) {
       ctx.scale(-1, 1);
       ctx.translate(-frameWidth, 0);
@@ -81,6 +102,8 @@ export class Sprite {
       frameWidth * this.scale,
       this.image.height * this.scale
     );
+
+    ctx.setTransform(transform);
 
     this.framesElapsed++;
 

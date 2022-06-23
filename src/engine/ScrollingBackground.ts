@@ -23,7 +23,7 @@ export class ScrollingBackground {
     });
   }
 
-  public draw(ctx) {
+  public draw(ctx: CanvasRenderingContext2D) {
     this.layers.sort((a, b) => a.priority - b.priority);
     this.layers.forEach(layer => {
       layer.sprites.forEach(data => {
