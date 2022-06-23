@@ -94,8 +94,6 @@ export class CanvasUIBuilder {
     el: CanvasElement,
     attributes: Record<string, any>
   ): CanvasElement {
-    el.width = attributes.width;
-    el.height = attributes.height;
     el.position = attributes.position;
     el.visible = attributes.visible;
     el.disabled = attributes.disabled;

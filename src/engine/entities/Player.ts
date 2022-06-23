@@ -22,6 +22,12 @@ const playerSprites = {
 export class Player extends Entity {
   public jumpCount = 0;
 
+  public health = 100;
+  private hpMax = 100;
+
+  public stamina = 100;
+  private stamMax = 100;
+
   public fruit: Record<FruitType, number> = {
     apple: 0,
     bananas: 0,
@@ -52,7 +58,7 @@ export class Player extends Entity {
     if (this.velocity.y > 0) {
       this.sprite = playerSprites.jump;
     }
-    if (this.jumpCount === 2) {
+    if (this.jumpCount > 1) {
       this.sprite = playerSprites.doubleJump;
       if (this.sprite.done()) {
         this.sprite = playerSprites.fall;
@@ -72,6 +78,16 @@ export class Player extends Entity {
         worldPos.x + worldDim.width - this.hitbox.getDimensions().width;
     }
 
+    if (Math.abs(this.velocity.x) === 3 && this.stamina > 0) {
+      this.stamina -= 0.5;
+    } else if (this.stamina < this.stamMax) {
+      this.stamina += 0.25;
+    }
+
+    if (this.stamina === 0) {
+      this.velocity.x = this.velocity.x > 0 ? 1 : -1;
+    }
+
     this.sprite.flip(this.facing);
   }
 
@@ -85,6 +101,14 @@ export class Player extends Entity {
 
   public addFruit(type: FruitType) {
     this.fruit[type] += 1;
+  }
+
+  public getHealthPercent() {
+    return (this.health / this.hpMax) * 100;
+  }
+
+  public getStaminaPercent() {
+    return (this.stamina / this.stamMax) * 100;
   }
 
   private setupEvents(events: Events) {
@@ -112,7 +136,11 @@ export class Player extends Entity {
         }
       }
       if (shift?.pressed) {
-        this.velocity.x *= 3;
+        if (this.velocity.x > 0) {
+          this.velocity.x = 3;
+        } else if (this.velocity.x < 0) {
+          this.velocity.x = -3;
+        }
       }
 
       if (space && space.pressed) {
@@ -138,7 +166,11 @@ export class Player extends Entity {
         this.velocity.x = 0;
       }
       if (shift?.pressed) {
-        this.velocity.x *= 3;
+        if (this.velocity.x > 0) {
+          this.velocity.x = 3;
+        } else if (this.velocity.x < 0) {
+          this.velocity.x = -3;
+        }
       }
     });
   }

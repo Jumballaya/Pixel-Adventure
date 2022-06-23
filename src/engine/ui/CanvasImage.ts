@@ -21,10 +21,19 @@ export class CanvasImage extends CanvasElement {
     super(width * count, height, position, image);
     this.image = image;
     this.image.setDimensions(width * count, height);
-    console.log(width, height, count);
   }
 
   public draw(ctx: CanvasRenderingContext2D, drawBox = false) {
     this.image.draw(ctx, this.position);
+  }
+
+  set width(w: number) {
+    const dim = this.image.getDimension();
+    this.image.setDimensions(w, dim.height);
+  }
+
+  set height(h: number) {
+    const dim = this.image.getDimension();
+    this.image.setDimensions(dim.width, h);
   }
 }

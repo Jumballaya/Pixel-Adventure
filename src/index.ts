@@ -55,6 +55,10 @@ const ui = new CanvasUI($canvas);
 if (scoreUi) {
   ui.document.body.appendChild(scoreUi);
 }
+const playerUi = playerDataUi(WIDTH, HEIGHT);
+if (playerUi) {
+  ui.document.body.appendChild(playerUi);
+}
 
 // Player
 const player = new Player(ui.events);
@@ -136,6 +140,16 @@ const update = () => {
   ui.document.body
     .findElementById('strawberryScore')
     ?.setAttribute('content', player.fruit['strawberry']);
+
+  const hpBar = ui.document.body.findElementById('health-bar');
+  if (hpBar) {
+    hpBar.width = player.getHealthPercent();
+  }
+
+  const stamBar = ui.document.body.findElementById('stamina-bar');
+  if (stamBar) {
+    stamBar.width = player.getStaminaPercent();
+  }
 
   // Player Update
   player.update(worldBox);
