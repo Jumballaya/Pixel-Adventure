@@ -1,24 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Game UI</title>
-  <style>
-    canvas {
-      border: 1px solid black;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game UI</title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        background-color: black;
+      }
+      main {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-    @font-face {
-      font-family: 'Press Start 2P';
-      src: url('src/assets/PressStart2P-Regular.ttf');
-    }
-  </style>
-</head>
-<body>
-  
-  <canvas id="canvas"></canvas>
-  <script src="src/index.ts" type="module"></script>
-</body>
+      @font-face {
+        font-family: 'Press Start 2P';
+        src: url('src/assets/PressStart2P-Regular.ttf');
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <canvas id="canvas"></canvas>
+    </main>
+    <script src="src/index.ts" type="module"></script>
+  </body>
 </html>

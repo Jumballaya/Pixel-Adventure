@@ -5,6 +5,9 @@ export class Sprite {
   private hasImage = true;
   private isDone = false;
 
+  private width: number;
+  private height: number;
+
   constructor(
     private src: string,
     private count: number = 1,
@@ -16,6 +19,10 @@ export class Sprite {
     try {
       new URL(src);
       this.image.src = src;
+      this.image.onload = (e) => {
+        this.width = this.image.width;
+        this.height = this.image.height;
+      };
     } catch (_) {
       this.hasImage = false;
     }
@@ -33,16 +40,25 @@ export class Sprite {
   }
 
   public getDimension() {
-    const frameWidth = this.image.width / this.count;
-    return {
-      width: frameWidth * this.scale,
-      height: this.image.height * this.scale
-    };
+    if (this.hasImage) {
+      const frameWidth = this.image.width / this.count;
+      return {
+        width: frameWidth * this.scale,
+        height: this.image.height * this.scale
+      };
+    } else {
+      return {
+        width: this.width,
+        height: this.height
+      };
+    }
   }
 
   public setDimensions(width: number, height: number) {
     this.image.width = width;
     this.image.height = height;
+    this.width = width;
+    this.height = height;
   }
 
   public setScale(s: number) {
@@ -75,7 +91,7 @@ export class Sprite {
     }
 
     ctx.fillStyle = this.src;
-    ctx.fillRect(position.x, position.y, 100, 100);
+    ctx.fillRect(position.x, position.y, this.width, this.height);
   }
 
   private drawImage(

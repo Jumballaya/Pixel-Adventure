@@ -1,1 +1,1 @@
-export type ElementName = 'base' | 'text' | 'button';
+export type ElementName = 'base' | 'text' | 'button' | 'image';

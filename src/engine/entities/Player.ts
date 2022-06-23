@@ -9,6 +9,7 @@ import { HitBox } from '../HitBox';
 import { Sprite } from '../Sprite';
 import { Entity } from './Entity';
 import { Events } from '../Events';
+import { FruitType } from './Fruit';
 
 const playerSprites = {
   idle: new Sprite(idlePng, 11),
@@ -21,10 +22,22 @@ const playerSprites = {
 export class Player extends Entity {
   public jumpCount = 0;
 
-  constructor() {
+  public fruit: Record<FruitType, number> = {
+    apple: 0,
+    bananas: 0,
+    cherries: 0,
+    kiwi: 0,
+    melon: 0,
+    orange: 0,
+    pineapple: 0,
+    strawberry: 0
+  };
+
+  constructor(events: Events) {
     const sprite = playerSprites.run;
     const hitbox = new HitBox(32, 38, new DOMPoint(0, 0), [-4, -5], '#ff0000');
     super(new DOMPoint(0, 0), sprite, hitbox);
+    this.setupEvents(events);
   }
 
   public update(worldBox: HitBox) {
@@ -70,10 +83,15 @@ export class Player extends Entity {
     }
   }
 
-  public setupEvents(events: Events) {
+  public addFruit(type: FruitType) {
+    this.fruit[type] += 1;
+  }
+
+  private setupEvents(events: Events) {
     events.listen('keydown', (evt) => {
       const d = evt.keys?.get('d');
       const a = evt.keys?.get('a');
+      const shift = evt.keys?.get('shift');
       const space = evt.keys?.get(' ');
 
       if (d?.pressed && !a?.pressed) {
@@ -93,6 +111,9 @@ export class Player extends Entity {
           this.facing = false;
         }
       }
+      if (shift?.pressed) {
+        this.velocity.x *= 3;
+      }
 
       if (space && space.pressed) {
         this.jump();
@@ -102,6 +123,7 @@ export class Player extends Entity {
     events.listen('keyup', (evt) => {
       const d = evt.keys?.get('d');
       const a = evt.keys?.get('a');
+      const shift = evt.keys?.get('shift');
 
       if (d?.pressed && !a?.pressed) {
         this.velocity.x = 1.5;
@@ -114,6 +136,9 @@ export class Player extends Entity {
 
       if (!d?.pressed && !a?.pressed) {
         this.velocity.x = 0;
+      }
+      if (shift?.pressed) {
+        this.velocity.x *= 3;
       }
     });
   }
