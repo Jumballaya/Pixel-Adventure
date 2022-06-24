@@ -27,10 +27,13 @@ export class Player extends Entity {
   public health = 100;
   private hpMax = 100;
 
-  public stamina = 100;
-  private stamMax = 100;
+  public stamina = 1000;
+  private stamMax = 1000;
 
   private particles: Particles[] = [];
+
+  private runSpeed = 10;
+  private walkSpeed = 5;
 
   public fruit: Record<FruitType, number> = {
     apple: 0,
@@ -46,7 +49,8 @@ export class Player extends Entity {
   constructor(events: Events) {
     const sprite = playerSprites.run;
     const hitbox = new HitBox(32, 38, new DOMPoint(0, 0), [-4, -5], '#ff0000');
-    super(new DOMPoint(0, 0), sprite, hitbox);
+    super(new DOMPoint(64, 768 - 40), sprite, hitbox);
+    this.facing = false;
     this.setupEvents(events);
   }
 
@@ -89,14 +93,14 @@ export class Player extends Entity {
         worldPos.x + worldDim.width - this.hitbox.getDimensions().width;
     }
 
-    if (Math.abs(this.velocity.x) === 3 && this.stamina > 0) {
+    if (Math.abs(this.velocity.x) == this.runSpeed && this.stamina > 0) {
       this.stamina -= 0.5;
     } else if (this.stamina < this.stamMax) {
       this.stamina += 0.25;
     }
 
     if (this.stamina === 0) {
-      this.velocity.x = this.velocity.x > 0 ? 1 : -1;
+      this.velocity.x = this.velocity.x > 0 ? this.walkSpeed : -this.walkSpeed;
     }
 
     for (const particle of this.particles) {
@@ -147,27 +151,27 @@ export class Player extends Entity {
       const space = evt.keys?.get(' ');
 
       if (d?.pressed && !a?.pressed) {
-        this.velocity.x = 1.5;
+        this.velocity.x = this.walkSpeed;
         this.facing = false;
       }
       if (a?.pressed && !d?.pressed) {
-        this.velocity.x = -1.5;
+        this.velocity.x = -this.walkSpeed;
         this.facing = true;
       }
       if (a?.pressed && d?.pressed) {
         if (a?.lastPressed > d?.lastPressed) {
-          this.velocity.x = -1.5;
+          this.velocity.x = -this.walkSpeed;
           this.facing = true;
         } else {
-          this.velocity.x = 1.5;
+          this.velocity.x = this.walkSpeed;
           this.facing = false;
         }
       }
       if (shift?.pressed) {
         if (this.velocity.x > 0) {
-          this.velocity.x = 3;
+          this.velocity.x = this.runSpeed;
         } else if (this.velocity.x < 0) {
-          this.velocity.x = -3;
+          this.velocity.x = -this.runSpeed;
         }
       }
 
@@ -182,11 +186,11 @@ export class Player extends Entity {
       const shift = evt.keys?.get('shift');
 
       if (d?.pressed && !a?.pressed) {
-        this.velocity.x = 1.5;
+        this.velocity.x = this.walkSpeed;
         this.facing = false;
       }
       if (a?.pressed && !d?.pressed) {
-        this.velocity.x = -1.5;
+        this.velocity.x = -this.walkSpeed;
         this.facing = true;
       }
 
@@ -195,9 +199,9 @@ export class Player extends Entity {
       }
       if (shift?.pressed) {
         if (this.velocity.x > 0) {
-          this.velocity.x = 3;
+          this.velocity.x = this.runSpeed;
         } else if (this.velocity.x < 0) {
-          this.velocity.x = -3;
+          this.velocity.x = -this.runSpeed;
         }
       }
     });

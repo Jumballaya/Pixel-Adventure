@@ -38,8 +38,7 @@ export class CanvasUIBuilder {
     const width = parseInt($el.getAttribute('width') || '0');
     const height = parseInt($el.getAttribute('height') || '0');
     const [x, y] = this.stringToTuple($el.getAttribute('position') || '');
-    const backgroundColor =
-      $el.getAttribute('backgroundColor') || 'rgba(0,0,0,0)';
+    const backgroundColor = $el.getAttribute('backgroundColor');
     const visible = $el.getAttribute('visible');
     const disabled = $el.getAttribute('disabled');
     const size = parseInt($el.getAttribute('size') || '16');
@@ -103,8 +102,8 @@ export class CanvasUIBuilder {
     el.content = attributes.content;
     el.borderColor = attributes.borderColor;
     el.setAttribute('lineHeight', attributes.lineHeight);
-    el.setAttribute('backgroundColor', attributes.backgroundColor);
     el.setAttribute('backgroundImage', attributes.backgroundImage);
+    el.backgroundColor = attributes.backgroundColor;
     el.setAttribute('borderwidth', attributes.borderWidth);
     el.setAttribute('scale', attributes.scale);
     el.family = attributes.family;
@@ -155,9 +154,9 @@ export class CanvasUIBuilder {
         attributes.height,
         attributes.position,
         new Sprite(
-          attributes.backgroundImage || attributes.backgroundColor,
-          undefined,
-          undefined,
+          attributes.backgroundColor,
+          attributes.count,
+          attributes.framesHold,
           attributes.scale
         )
       ),

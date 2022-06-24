@@ -2,7 +2,11 @@
 
 Visual Assets by Pixel Frog -- https://pixelfrog-assets.itch.io/pixel-adventure-1
 
+## Progress Report #2
 
+I added a vendor NPC where players can trade fruit to extend their stamina/health/jump count.
+
+![Second Screenshot](/pics/second-screenshot.png)
 
 ## Progress Report #1
 

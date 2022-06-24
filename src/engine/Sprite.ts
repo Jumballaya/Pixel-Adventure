@@ -67,8 +67,9 @@ export class Sprite {
   }
 
   public setColor(c: string) {
-    this.src = c;
-    this.hasImage = false;
+    if (!this.hasImage) {
+      this.src = c;
+    }
   }
 
   public setOpacity(o: number) {

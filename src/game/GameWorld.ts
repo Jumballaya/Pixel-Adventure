@@ -1,5 +1,6 @@
 import { Fruit } from '../engine/entities/Fruit';
 import { Player } from '../engine/entities/Player';
+import { Vendor } from '../engine/entities/Vendor';
 import { HitBox } from '../engine/HitBox';
 import { GravitySystem } from '../engine/systems/GravitySystem';
 import { TileMapper } from '../engine/TileMapper';
@@ -20,7 +21,11 @@ export class GameWorld {
 
   private gravSystem = new GravitySystem(0.25);
 
-  constructor(private $canvas, private width: number, private height: number) {
+  constructor(
+    private $canvas: HTMLCanvasElement,
+    private width: number,
+    private height: number
+  ) {
     this.ctx = this.$canvas.getContext('2d') as CanvasRenderingContext2D;
     $canvas.setAttribute('width', `${this.width}px`);
     $canvas.setAttribute('height', `${this.height}px`);
@@ -97,6 +102,14 @@ export class GameWorld {
         if (this.player.hitbox.collided(ent.hitbox)) {
           this.gameMap.removeEntity(ent);
           this.player.addFruit(ent.type);
+        }
+      }
+
+      if (ent instanceof Vendor) {
+        if (this.player.hitbox.collided(ent.hitbox)) {
+          ent.toggleHelperMessage(true);
+        } else {
+          ent.toggleHelperMessage(false);
         }
       }
     }
