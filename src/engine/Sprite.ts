@@ -7,6 +7,7 @@ export class Sprite {
 
   private width: number;
   private height: number;
+  private opacity = 1;
 
   constructor(
     private src: string,
@@ -70,6 +71,12 @@ export class Sprite {
     this.hasImage = false;
   }
 
+  public setOpacity(o: number) {
+    if (o > 0 && o < 1) {
+      this.opacity = o;
+    }
+  }
+
   public reset() {
     this.current = 0;
     this.framesElapsed = 0;
@@ -107,6 +114,7 @@ export class Sprite {
       ctx.translate(-frameWidth, 0);
     }
 
+    ctx.globalAlpha = this.opacity;
     ctx.drawImage(
       this.image,
       frameWidth * this.current,
@@ -118,6 +126,7 @@ export class Sprite {
       frameWidth * this.scale,
       this.image.height * this.scale
     );
+    ctx.globalAlpha = 1;
 
     ctx.setTransform(transform);
 

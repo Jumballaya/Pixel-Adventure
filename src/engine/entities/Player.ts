@@ -3,13 +3,14 @@ import fallPng from '../../assets/Virtual Guy/Fall (32x32).png';
 import jumpPng from '../../assets/Virtual Guy/Jump (32x32).png';
 import runPng from '../../assets/Virtual Guy/Run (32x32).png';
 import doubleJumpPng from '../../assets/Virtual Guy/Double Jump (32x32).png';
+import particlePng from '../../assets/Dust Particle.png';
 
 import { HitBox } from '../HitBox';
-
 import { Sprite } from '../Sprite';
 import { Entity } from './Entity';
 import { Events } from '../Events';
 import { FruitType } from './Fruit';
+import { Particles } from '../Particles';
 
 const playerSprites = {
   idle: new Sprite(idlePng, 11),
@@ -21,12 +22,15 @@ const playerSprites = {
 
 export class Player extends Entity {
   public jumpCount = 0;
+  private jumpMax = 2;
 
   public health = 100;
   private hpMax = 100;
 
   public stamina = 100;
   private stamMax = 100;
+
+  private particles: Particles[] = [];
 
   public fruit: Record<FruitType, number> = {
     apple: 0,
@@ -44,6 +48,13 @@ export class Player extends Entity {
     const hitbox = new HitBox(32, 38, new DOMPoint(0, 0), [-4, -5], '#ff0000');
     super(new DOMPoint(0, 0), sprite, hitbox);
     this.setupEvents(events);
+  }
+
+  public draw(ctx: CanvasRenderingContext2D, drawBox = false) {
+    super.draw(ctx, drawBox);
+    for (const particle of this.particles) {
+      particle.draw(ctx);
+    }
   }
 
   public update(worldBox: HitBox) {
@@ -88,15 +99,32 @@ export class Player extends Entity {
       this.velocity.x = this.velocity.x > 0 ? 1 : -1;
     }
 
+    for (const particle of this.particles) {
+      particle.update();
+    }
+
     this.sprite.flip(this.facing);
   }
 
   public jump() {
-    playerSprites.doubleJump.reset();
-    if (this.jumpCount < 2) {
+    if (this.jumpCount < this.jumpMax) {
+      playerSprites.doubleJump.reset();
+      this.actionParticles();
+    }
+
+    if (this.jumpCount < this.jumpMax) {
       this.jumpCount++;
       this.velocity.y = 8;
     }
+  }
+
+  public actionParticles() {
+    const particles = new Particles(particlePng, 10, 200);
+    this.particles.push(particles);
+    particles.start(new DOMPoint(this.position.x, this.position.y + 32));
+    setTimeout(() => {
+      this.particles = this.particles.filter((p) => p !== particles);
+    }, 200);
   }
 
   public addFruit(type: FruitType) {
