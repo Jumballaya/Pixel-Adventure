@@ -244,9 +244,27 @@ export class CanvasElement {
       });
       if (propagate) {
         for (const child of this.children) {
-          child.mouseover(pos);
+          child.mouseover(pos, true);
         }
       }
+    }
+  }
+
+  public mouseout(pos: DOMPoint, propagate = true) {
+    const enabled =
+      this.attributeList.has('disabled') && !this.attributeList.get('disabled');
+    if (enabled) {
+      if (propagate) {
+        for (const child of this.children) {
+          child.mouseout(pos, true);
+        }
+      }
+    }
+    if (enabled && !this.hitBox.collided(new HitBox(3, 3, pos))) {
+      this.fireEvent('ui-mouseout', {
+        target: this,
+        data: { position: pos, keys: {} }
+      });
     }
   }
 

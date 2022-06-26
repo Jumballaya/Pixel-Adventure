@@ -22,7 +22,7 @@ export const GameMap = (width: number, height: number) =>
       ['kiwi', (pos: DOMPoint) => new Fruit('kiwi', pos)],
       ['orange', (pos: DOMPoint) => new Fruit('orange', pos)],
       ['strawberry', (pos: DOMPoint) => new Fruit('strawberry', pos)],
-      ['vendor', (pos: DOMPoint) => new Vendor()]
+      ['vendor', () => new Vendor()]
     ]),
     tileMaps: new Map([['main', tilemap]]),
     hitboxes: new Map([
@@ -67,7 +67,7 @@ export const GameMap = (width: number, height: number) =>
             null,
             null,
             null,
-            null,
+            { entity: true, map: 'vendor' },
             null,
             null,
             null,

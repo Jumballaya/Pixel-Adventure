@@ -23,6 +23,7 @@ export class TileMapper {
       } | null>
     >
   >;
+  private paused = false;
 
   constructor(data: MapData) {
     this.position = data.position;
@@ -184,5 +185,19 @@ export class TileMapper {
         hb.setPosition(hbPos);
       });
     });
+  }
+
+  public pause() {
+    for (const inst of this.instances) {
+      inst.pause();
+    }
+    this.paused = true;
+  }
+
+  public unpause() {
+    for (const inst of this.instances) {
+      inst.unpause();
+    }
+    this.paused = false;
   }
 }

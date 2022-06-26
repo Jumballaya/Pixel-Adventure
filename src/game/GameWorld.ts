@@ -7,6 +7,8 @@ import { TileMapper } from '../engine/TileMapper';
 import { CanvasUI } from '../engine/ui/CanvasUI';
 import { GameMap } from './GameMap';
 import { createUi } from './ui';
+import { shopWindow } from './ui/shop-window';
+import { vendorDialog } from './ui/vendor-dialog';
 
 export class GameWorld {
   private drawBox = false;
@@ -18,6 +20,8 @@ export class GameWorld {
   private gameMap: TileMapper;
   private player: Player;
   private ui: CanvasUI;
+
+  private paused = false;
 
   private gravSystem = new GravitySystem(0.25);
 
@@ -53,64 +57,94 @@ export class GameWorld {
     );
     this.ui = createUi(this.$canvas, this.width, this.height);
     this.player = new Player(this.ui.events);
+
+    this.ui.events.listen('keydown', (evt) => {
+      const escape = evt.keys?.get('escape');
+      if (escape && escape.pressed) {
+        if (this.paused) this.unpause();
+        else this.pause();
+      }
+    });
+
+    this.ui.document.body.appendChild(vendorDialog);
+    this.ui.document.body.appendChild(shopWindow);
+
+    this.gameMap.draw(this.ctx, this.worldBox, this.drawBox);
   }
 
   public update() {
     // Gravity
-    this.gravSystem.update([this.player]);
+    if (!this.paused) {
+      this.gravSystem.update([this.player]);
+    }
 
     // Ground Collision
-    for (const ground of this.gameMap.getHitboxes('platforms')) {
-      if (this.player.hitbox.collided(ground)) {
-        if (this.player.velocity.y < 0) {
-          const pos = this.player.position;
-          this.player.setPosition(
-            new DOMPoint(pos.x, ground.getPosition().y - 33)
-          );
-          this.player.velocity.y = 0;
-          this.player.jumpCount = 0;
+    if (!this.paused) {
+      for (const ground of this.gameMap.getHitboxes('platforms')) {
+        if (this.player.hitbox.collided(ground)) {
+          if (this.player.velocity.y < 0) {
+            const pos = this.player.position;
+            this.player.setPosition(
+              new DOMPoint(pos.x, ground.getPosition().y - 33)
+            );
+            this.player.velocity.y = 0;
+            this.player.jumpCount = 0;
+          }
         }
       }
     }
 
     // Side Collision
-    if (
-      this.player.hitbox.collided(this.worldBoxRight) &&
-      this.player.velocity.x > 0
-    ) {
-      this.gameMap.shiftLeft(this.player.velocity.x);
-      const oldPos = this.player.position;
-      this.player.setPosition(
-        new DOMPoint(oldPos.x - this.player.velocity.x, oldPos.y)
-      );
-    }
-    if (
-      this.player.hitbox.collided(this.worldBoxLeft) &&
-      this.gameMap.getPosition().x < 0 &&
-      this.player.velocity.x < 0
-    ) {
-      this.gameMap.shiftRight(-this.player.velocity.x);
-      const oldPos = this.player.position;
-      this.player.setPosition(
-        new DOMPoint(oldPos.x - this.player.velocity.x, oldPos.y)
-      );
+    if (!this.paused) {
+      if (
+        this.player.hitbox.collided(this.worldBoxRight) &&
+        this.player.velocity.x > 0
+      ) {
+        this.gameMap.shiftLeft(this.player.velocity.x);
+        const oldPos = this.player.position;
+        this.player.setPosition(
+          new DOMPoint(oldPos.x - this.player.velocity.x, oldPos.y)
+        );
+      }
+      if (
+        this.player.hitbox.collided(this.worldBoxLeft) &&
+        this.gameMap.getPosition().x < 0 &&
+        this.player.velocity.x < 0
+      ) {
+        this.gameMap.shiftRight(-this.player.velocity.x);
+        const oldPos = this.player.position;
+        this.player.setPosition(
+          new DOMPoint(oldPos.x - this.player.velocity.x, oldPos.y)
+        );
+      }
     }
 
     // Entity <-> Player Collision
-    for (const ent of this.gameMap.getEntities()) {
-      if (ent instanceof Fruit) {
-        if (this.player.hitbox.collided(ent.hitbox)) {
-          this.gameMap.removeEntity(ent);
-          this.player.addFruit(ent.type);
+    if (!this.paused) {
+      for (const ent of this.gameMap.getEntities()) {
+        if (ent instanceof Fruit) {
+          if (this.player.hitbox.collided(ent.hitbox)) {
+            this.gameMap.removeEntity(ent);
+            this.player.addFruit(ent.type);
+          }
         }
-      }
 
-      if (ent instanceof Vendor) {
-        if (this.player.hitbox.collided(ent.hitbox)) {
-          ent.toggleHelperMessage(true);
-        } else {
-          ent.toggleHelperMessage(false);
+        if (ent instanceof Vendor) {
+          if (this.player.hitbox.collided(ent.hitbox)) {
+            ent.toggleHelperMessage(true);
+            if (
+              this.ui.events.getLastPressed()?.key === 'e' &&
+              !ent.shopOpen()
+            ) {
+              ent.openShop();
+              this.pause();
+            }
+          } else {
+            ent.closeShop();
+            ent.toggleHelperMessage(false);
+          }
         }
+        ent.update(this.worldBox, this.ui);
       }
     }
 
@@ -151,7 +185,9 @@ export class GameWorld {
     }
 
     // Update Player
-    this.player.update(this.worldBox);
+    if (!this.paused) {
+      this.player.update(this.worldBox, this.ui);
+    }
   }
 
   public draw() {
@@ -167,5 +203,17 @@ export class GameWorld {
 
     this.player.draw(this.ctx, this.drawBox);
     this.ui.draw(this.drawBox);
+  }
+
+  public pause() {
+    this.paused = true;
+    this.player.pause();
+    this.gameMap.pause();
+  }
+
+  public unpause() {
+    this.paused = false;
+    this.player.unpause();
+    this.gameMap.unpause();
   }
 }

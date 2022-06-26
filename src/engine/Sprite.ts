@@ -9,6 +9,8 @@ export class Sprite {
   private height: number;
   private opacity = 1;
 
+  private paused = false;
+
   constructor(
     private src: string,
     private count: number = 1,
@@ -93,6 +95,14 @@ export class Sprite {
     this.flipped = flip;
   }
 
+  public pause() {
+    this.paused = true;
+  }
+
+  public unpause() {
+    this.paused = false;
+  }
+
   public draw(ctx: CanvasRenderingContext2D, position: DOMPoint, flip = false) {
     if (this.hasImage) {
       return this.drawImage(ctx, position, flip);
@@ -132,6 +142,8 @@ export class Sprite {
     ctx.setTransform(transform);
 
     this.framesElapsed++;
+
+    if (this.paused) return;
 
     if (this.framesElapsed % this.framesHold === 0) {
       if (this.repeat) {

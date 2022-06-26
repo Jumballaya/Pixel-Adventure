@@ -1,26 +1,12 @@
 import idlePng from '../../assets/Ninja Frog/Idle (32x32).png';
-import frame from '../../assets/menu-gui-paper.png';
-
 import { HitBox } from '../HitBox';
 import { Sprite } from '../Sprite';
-import { TileMap } from '../TileMap';
-import { CanvasElement } from '../ui/CanvasElement';
-import { CanvasUIBuilder } from '../ui/CanvasUIBuilder';
 import { Entity } from './Entity';
-
-const helperDialog = new CanvasUIBuilder().parseFromString(`
-  <div family="'Press Start 2P', sans-serif">
-    <img width="174" height="32" backgroundColor="#ead4aa">
-    <p size="10">Press 'e' to open</p>
-    <p size="10" position="[0, 16]">the shop!</p>
-  </div>`) as CanvasElement;
-
-helperDialog.borderImage = new TileMap(frame, [3, 3], 0.25);
-helperDialog.width = 174;
-helperDialog.height = 38;
+import { CanvasUI } from '../ui/CanvasUI';
 
 export class Vendor extends Entity {
   private showHelperMessage = false;
+  private shopIsOpen = false;
 
   constructor() {
     const sprite = new Sprite(idlePng, 11);
@@ -34,15 +20,40 @@ export class Vendor extends Entity {
     this.showHelperMessage = toggle;
   }
 
-  public draw(ctx: CanvasRenderingContext2D, drawBox = false) {
-    super.draw(ctx, drawBox);
+  public update(worldBox: HitBox, ui: CanvasUI): void {
+    if (!this.hitbox.collided(worldBox)) return;
 
-    if (this.showHelperMessage) {
-      helperDialog.position = new DOMPoint(
-        this.position.x - 64,
-        this.position.y - 36
-      );
-      helperDialog.draw(ctx);
+    const vendorDialog = ui.document.body.findElementById('vendor-dialog');
+    const shopWindow = ui.document.body.findElementById('vendor-shop');
+    if (vendorDialog) {
+      if (this.showHelperMessage) {
+        vendorDialog.position = new DOMPoint(
+          this.position.x - 64,
+          this.position.y - 36
+        );
+      } else {
+        vendorDialog.position = new DOMPoint(-500, -500);
+      }
     }
+
+    if (shopWindow) {
+      if (this.shopIsOpen) {
+        shopWindow.position = new DOMPoint(300, 200);
+      } else {
+        shopWindow.position = new DOMPoint(-500, -500);
+      }
+    }
+  }
+
+  public openShop() {
+    this.shopIsOpen = true;
+  }
+
+  public closeShop() {
+    this.shopIsOpen = false;
+  }
+
+  public shopOpen(): boolean {
+    return this.shopIsOpen;
   }
 }

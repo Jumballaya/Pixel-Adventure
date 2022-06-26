@@ -3,4 +3,5 @@ export type ListenerType =
   | 'ui-keydown'
   | 'ui-keyup'
   | 'ui-mouseover'
+  | 'ui-mouseout'
   | 'ui-focus';

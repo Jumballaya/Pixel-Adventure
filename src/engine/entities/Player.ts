@@ -11,6 +11,7 @@ import { Entity } from './Entity';
 import { Events } from '../Events';
 import { FruitType } from './Fruit';
 import { Particles } from '../Particles';
+import { CanvasUI } from '../ui/CanvasUI';
 
 const playerSprites = {
   idle: new Sprite(idlePng, 11),
@@ -61,7 +62,8 @@ export class Player extends Entity {
     }
   }
 
-  public update(worldBox: HitBox) {
+  public update(worldBox: HitBox, ui: CanvasUI) {
+    if (this.paused) return;
     if (this.velocity.x !== 0) {
       this.sprite = playerSprites.run;
     } else {
@@ -111,6 +113,7 @@ export class Player extends Entity {
   }
 
   public jump() {
+    if (this.paused) return;
     if (this.jumpCount < this.jumpMax) {
       playerSprites.doubleJump.reset();
       this.actionParticles();
@@ -123,6 +126,7 @@ export class Player extends Entity {
   }
 
   public actionParticles() {
+    if (this.paused) return;
     const particles = new Particles(particlePng, 10, 200);
     this.particles.push(particles);
     particles.start(new DOMPoint(this.position.x, this.position.y + 32));
@@ -132,6 +136,7 @@ export class Player extends Entity {
   }
 
   public addFruit(type: FruitType) {
+    if (this.paused) return;
     this.fruit[type] += 1;
   }
 
@@ -145,11 +150,11 @@ export class Player extends Entity {
 
   private setupEvents(events: Events) {
     events.listen('keydown', (evt) => {
+      if (this.paused) return;
       const d = evt.keys?.get('d');
       const a = evt.keys?.get('a');
       const shift = evt.keys?.get('shift');
       const space = evt.keys?.get(' ');
-
       if (d?.pressed && !a?.pressed) {
         this.velocity.x = this.walkSpeed;
         this.facing = false;
@@ -181,6 +186,7 @@ export class Player extends Entity {
     });
 
     events.listen('keyup', (evt) => {
+      if (this.paused) return;
       const d = evt.keys?.get('d');
       const a = evt.keys?.get('a');
       const shift = evt.keys?.get('shift');
