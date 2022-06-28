@@ -2,6 +2,15 @@
 
 Visual Assets by Pixel Frog -- https://pixelfrog-assets.itch.io/pixel-adventure-1
 
+## Progress Report #4
+
+Player can now purchase new abilities in exchange for fruit. There is also a slime enemy that deals damage to the player on contact.
+
+Next steps: UX updates for the vendor menu to show what abilities a player has bought, More enemies and more to starting map.
+
+![Fourth Screenshot](/pics/fourth-screenshot.png)
+
+
 ## Progress Report #3
 
 Vendor NPC now has a shop interface that pauses the game while the player shops for new abilities as well as the 'Ticket Home' option that wins the game for the player.
