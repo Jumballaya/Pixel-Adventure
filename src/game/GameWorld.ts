@@ -1,5 +1,6 @@
 import { Fruit } from '../engine/entities/Fruit';
 import { Player } from '../engine/entities/Player';
+import { Slime } from '../engine/entities/Slime';
 import { Vendor } from '../engine/entities/Vendor';
 import { HitBox } from '../engine/HitBox';
 import { GravitySystem } from '../engine/systems/GravitySystem';
@@ -24,6 +25,10 @@ export class GameWorld {
   private paused = false;
 
   private gravSystem = new GravitySystem(0.25);
+
+  private abilities = {
+    tripleJump: false
+  };
 
   constructor(
     private $canvas: HTMLCanvasElement,
@@ -68,6 +73,17 @@ export class GameWorld {
 
     this.ui.document.body.appendChild(vendorDialog);
     this.ui.document.body.appendChild(shopWindow);
+
+    shopWindow
+      .findElementById('triple-jump')
+      ?.addEventListener('ui-click', (evt) => {
+        console.log(evt);
+        this.abilities.tripleJump = true;
+        if (this.player.canBuy({ apple: 9 })) {
+          this.player.buy({ apple: 9 });
+          this.player.jumpMax = 3;
+        }
+      });
 
     this.gameMap.draw(this.ctx, this.worldBox, this.drawBox);
   }
@@ -144,6 +160,16 @@ export class GameWorld {
             ent.toggleHelperMessage(false);
           }
         }
+
+        if (ent instanceof Slime) {
+          if (this.player.hitbox.collided(ent.hitbox)) {
+            this.player.velocity.x = -this.player.velocity.x;
+            this.player.velocity.y = -this.player.velocity.y;
+
+            this.player.health -= ent.damage;
+          }
+        }
+
         ent.update(this.worldBox, this.ui);
       }
     }

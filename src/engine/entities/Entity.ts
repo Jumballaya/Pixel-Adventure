@@ -6,6 +6,8 @@ export class Entity {
   public velocity = { x: 0, y: 0 };
   public facing = true;
 
+  public damage = 0;
+
   protected paused = false;
 
   constructor(

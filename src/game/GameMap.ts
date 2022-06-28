@@ -1,29 +1,32 @@
 import terrainPng from '../assets/Terrain (16x16).png';
+import { Entity } from '../engine/entities/Entity';
 import { Fruit } from '../engine/entities/Fruit';
+import { Slime } from '../engine/entities/Slime';
 import { Vendor } from '../engine/entities/Vendor';
 import { HitBox } from '../engine/HitBox';
 import { TileMap } from '../engine/TileMap';
 import { TileMapper } from '../engine/TileMapper';
 
 const tilemap = new TileMap(terrainPng, [22, 11], 2);
-
+const entities: Map<string, (pos: DOMPoint) => Entity> = new Map([
+  ['apple', (pos: DOMPoint) => new Fruit('apple', pos)],
+  ['bananas', (pos: DOMPoint) => new Fruit('bananas', pos)],
+  ['cherries', (pos: DOMPoint) => new Fruit('cherries', pos)],
+  ['melon', (pos: DOMPoint) => new Fruit('melon', pos)],
+  ['pineapple', (pos: DOMPoint) => new Fruit('pineapple', pos)],
+  ['kiwi', (pos: DOMPoint) => new Fruit('kiwi', pos)],
+  ['orange', (pos: DOMPoint) => new Fruit('orange', pos)],
+  ['strawberry', (pos: DOMPoint) => new Fruit('strawberry', pos)],
+  ['vendor', () => new Vendor()],
+  ['slime', (pos: DOMPoint) => new Slime(pos)]
+]);
 export const GameMap = (width: number, height: number) =>
   new TileMapper({
     tileDimensions: { width: 32, height: 32 },
     position: new DOMPoint(0, 0),
     height: Math.ceil(height / 32),
     width: Math.ceil(width / 8),
-    entities: new Map([
-      ['apple', (pos: DOMPoint) => new Fruit('apple', pos)],
-      ['bananas', (pos: DOMPoint) => new Fruit('bananas', pos)],
-      ['cherries', (pos: DOMPoint) => new Fruit('cherries', pos)],
-      ['melon', (pos: DOMPoint) => new Fruit('melon', pos)],
-      ['pineapple', (pos: DOMPoint) => new Fruit('pineapple', pos)],
-      ['kiwi', (pos: DOMPoint) => new Fruit('kiwi', pos)],
-      ['orange', (pos: DOMPoint) => new Fruit('orange', pos)],
-      ['strawberry', (pos: DOMPoint) => new Fruit('strawberry', pos)],
-      ['vendor', () => new Vendor()]
-    ]),
+    entities,
     tileMaps: new Map([['main', tilemap]]),
     hitboxes: new Map([
       [
@@ -37,6 +40,78 @@ export const GameMap = (width: number, height: number) =>
       ]
     ]),
     map: new Map([
+      [
+        '1:enemies',
+        [
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [],
+          [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            { entity: true, map: 'slime' },
+            null,
+            { entity: true, map: 'slime' },
+            null,
+            { entity: true, map: 'slime' }
+          ]
+        ]
+      ],
       [
         '1:vendor',
         [
@@ -231,8 +306,8 @@ export const GameMap = (width: number, height: number) =>
             null,
             null,
             { entity: true, map: 'cherries' },
-            { entity: true, map: 'bananas' },
-            { entity: true, map: 'bananas' },
+            { entity: true, map: 'apple' },
+            { entity: true, map: 'apple' },
             { entity: true, map: 'kiwi' },
             null,
             null,

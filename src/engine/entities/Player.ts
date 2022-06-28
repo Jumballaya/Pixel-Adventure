@@ -23,7 +23,8 @@ const playerSprites = {
 
 export class Player extends Entity {
   public jumpCount = 0;
-  private jumpMax = 2;
+  public jumpMax = 2;
+  public jumpAmount = 7;
 
   public health = 100;
   private hpMax = 100;
@@ -33,8 +34,8 @@ export class Player extends Entity {
 
   private particles: Particles[] = [];
 
-  private runSpeed = 10;
-  private walkSpeed = 5;
+  private runSpeed = 5;
+  private walkSpeed = 3;
 
   public fruit: Record<FruitType, number> = {
     apple: 0,
@@ -121,7 +122,7 @@ export class Player extends Entity {
 
     if (this.jumpCount < this.jumpMax) {
       this.jumpCount++;
-      this.velocity.y = 8;
+      this.velocity.y = this.jumpAmount;
     }
   }
 
@@ -133,6 +134,20 @@ export class Player extends Entity {
     setTimeout(() => {
       this.particles = this.particles.filter((p) => p !== particles);
     }, 200);
+  }
+
+  public canBuy(check: Partial<Record<FruitType, number>>): boolean {
+    let ret = true;
+    for (const key in check) {
+      if (this.fruit[key] < check[key]) ret = false;
+    }
+    return ret;
+  }
+
+  public buy(fruit: Partial<Record<FruitType, number>>) {
+    for (const key in fruit) {
+      this.fruit[key] -= fruit[key];
+    }
   }
 
   public addFruit(type: FruitType) {
