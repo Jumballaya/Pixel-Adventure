@@ -2,6 +2,16 @@
 
 Visual Assets by Pixel Frog -- https://pixelfrog-assets.itch.io/pixel-adventure-1
 
+
+## Progress Report #6
+
+Ability shop is now a better experience. The UI tells players what abilities have been purchased and it allows players to dismiss the window with the escape key.
+
+Next steps: Pause menu + more enemies + the main fruit-picking zone of the game.
+
+![Sixth Screenshot](/pics/sixth-screenshot.png)
+
+
 ## Progress Report #5
 
 Now making maps with Tiled to allow for easier/quicker map iterations. Also finished the starter level and added the door to the next zone.
