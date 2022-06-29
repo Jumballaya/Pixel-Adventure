@@ -1,4 +1,4 @@
-import { Fruit } from '../engine/entities/Fruit';
+import { Fruit, FruitType } from '../engine/entities/Fruit';
 import { Player } from '../engine/entities/Player';
 import { Slime } from '../engine/entities/Slime';
 import { Vendor } from '../engine/entities/Vendor';
@@ -7,73 +7,10 @@ import { GravitySystem } from '../engine/systems/GravitySystem';
 import { TileMapper } from '../engine/TileMapper';
 import { CanvasUI } from '../engine/ui/CanvasUI';
 import { GameMap } from './GameMap';
-import { Cloud } from '../engine/entities/Cloud';
 import { createUi } from './ui';
 import { shopWindow } from './ui/shop-window';
 import { vendorDialog } from './ui/vendor-dialog';
-
-const clouds = (() => {
-  const randomCloud = () => {
-    const x = 960 + Math.random() * 430;
-    const y = 120 - Math.random() * 120;
-    const cloud = new Cloud(new DOMPoint(x, y));
-    cloud.velocity.x -= 0.5 + Math.random();
-    return cloud;
-  };
-
-  const clouds = Array.from(new Array(Math.ceil(Math.random() * 4))).map(
-    randomCloud
-  );
-
-  const randomAdd = () => {
-    if (Date.now() % Math.ceil(Math.random() * 215) === 0) {
-      clouds.push(randomCloud());
-      clouds.sort((a, b) => a.position.x - b.position.x);
-
-      if (clouds[0].position.x < -200) clouds.shift();
-    }
-
-    setTimeout(() => {
-      randomAdd();
-    }, 50);
-  };
-
-  randomAdd();
-
-  const update = () => {
-    clouds.forEach((c) => {
-      c.position.x += c.velocity.x;
-    });
-  };
-
-  const shiftLeft = (amount: number) => {
-    clouds.forEach((c) => {
-      c.position.x -= amount;
-    });
-  };
-
-  const shiftRight = (amount: number) => {
-    clouds.forEach((c) => {
-      c.position.x += -amount;
-    });
-  };
-
-  const draw = (ctx: CanvasRenderingContext2D, drawBox = false) => {
-    clouds.forEach((c) => {
-      c.draw(ctx, drawBox);
-    });
-  };
-
-  return {
-    update,
-    shiftLeft,
-    shiftRight,
-    draw
-  };
-})();
-
-const cloud = new Cloud(new DOMPoint(500, 64));
-cloud.velocity.x -= 0.5;
+import { clouds } from './clouds';
 
 export class GameWorld {
   private drawBox = false;
@@ -90,8 +27,26 @@ export class GameWorld {
 
   private gravSystem = new GravitySystem(0.25);
 
-  private abilities = {
-    tripleJump: false
+  private abilities: Record<string, boolean> = {
+    tripleJump: false,
+    quadJump: false,
+    extraHealth1: false,
+    extraHealth2: false,
+    extraStamina1: false,
+    extraStamina2: false,
+    speedBoost1: false,
+    speedBoost2: false
+  };
+
+  private abilitiesCosts: Record<string, Partial<Record<FruitType, number>>> = {
+    tripleJump: { apple: 9 },
+    quadJump: { apple: 4, bananas: 4, pineapple: 4, orange: 4 },
+    extraHealth1: { melon: 3, strawberry: 3, orange: 3 },
+    extraHealth2: { kiwi: 6, bananas: 6 },
+    extraStamina1: { cherries: 3, pineapple: 3, bananas: 3 },
+    extraStamina2: { orange: 6, melon: 6 },
+    speedBoost1: { orange: 6, melon: 3, strawberry: 3, apple: 3 },
+    speedBoost2: { strawberry: 8, kiwi: 8, cherries: 4 }
   };
 
   constructor(
@@ -132,20 +87,133 @@ export class GameWorld {
       if (escape && escape.pressed) {
         if (this.paused) this.unpause();
         else this.pause();
+        const vendor = this.gameMap
+          .getEntities()
+          .filter((e) => e instanceof Vendor)[0] as Vendor | undefined;
+        if (vendor) {
+          vendor.closeShop();
+        }
       }
     });
 
-    // this.ui.document.body.appendChild(vendorDialog);
-    // this.ui.document.body.appendChild(shopWindow);
+    this.ui.document.body.appendChild(vendorDialog);
+    this.ui.document.body.appendChild(shopWindow);
 
     shopWindow
       .findElementById('triple-jump')
       ?.addEventListener('ui-click', (evt) => {
-        console.log(evt);
-        this.abilities.tripleJump = true;
-        if (this.player.canBuy({ apple: 9 })) {
-          this.player.buy({ apple: 9 });
+        if (
+          !this.abilities.tripleJump &&
+          this.player.canBuy(this.abilitiesCosts.tripleJump)
+        ) {
+          evt.target.setAttribute('purchased', true);
+          this.player.buy(this.abilitiesCosts.tripleJump);
+          this.abilities.tripleJump = true;
           this.player.jumpMax = 3;
+        }
+      });
+
+    shopWindow
+      .findElementById('quad-jump')
+      ?.addEventListener('ui-click', (evt) => {
+        if (
+          !this.abilities.quadJump &&
+          this.player.canBuy(this.abilitiesCosts.quadJump)
+        ) {
+          evt.target.setAttribute('purchased', true);
+          this.player.buy(this.abilitiesCosts.quadJump);
+          this.abilities.quadJump = true;
+          this.player.jumpMax = 4;
+        }
+      });
+
+    shopWindow
+      .findElementById('more-health-i')
+      ?.addEventListener('ui-click', (evt) => {
+        if (
+          !this.abilities.extraHealth1 &&
+          this.player.canBuy(this.abilitiesCosts.extraHealth1)
+        ) {
+          evt.target.setAttribute('purchased', true);
+          this.player.buy(this.abilitiesCosts.extraHealth1);
+          this.abilities.extraHealth1 = true;
+          this.player.hpMax += 25;
+          this.player.health = this.player.hpMax;
+        }
+      });
+
+    shopWindow
+      .findElementById('more-health-ii')
+      ?.addEventListener('ui-click', (evt) => {
+        if (
+          !this.abilities.extraHealth2 &&
+          this.player.canBuy(this.abilitiesCosts.extraHealth2)
+        ) {
+          evt.target.setAttribute('purchased', true);
+          this.player.buy(this.abilitiesCosts.extraHealth2);
+          this.abilities.extraHealth2 = true;
+          this.player.hpMax += 35;
+          this.player.health = this.player.hpMax;
+        }
+      });
+
+    shopWindow
+      .findElementById('more-stamina-i')
+      ?.addEventListener('ui-click', (evt) => {
+        if (
+          !this.abilities.extraStamina1 &&
+          this.player.canBuy(this.abilitiesCosts.extraStamina1)
+        ) {
+          evt.target.setAttribute('purchased', true);
+          this.player.buy(this.abilitiesCosts.extraStamina1);
+          this.abilities.extraStamina1 = true;
+          this.player.stamMax += 35;
+          this.player.stamina = this.player.stamMax;
+        }
+      });
+
+    shopWindow
+      .findElementById('more-stamina-ii')
+      ?.addEventListener('ui-click', (evt) => {
+        if (
+          !this.abilities.extraStamina2 &&
+          this.player.canBuy(this.abilitiesCosts.extraStamina2)
+        ) {
+          evt.target.setAttribute('purchased', true);
+          this.player.buy(this.abilitiesCosts.extraStamina2);
+          this.abilities.extraStamina2 = true;
+          this.player.stamMax += 35;
+          this.player.stamina = this.player.stamMax;
+        }
+      });
+
+    shopWindow
+      .findElementById('speed-boost-i')
+      ?.addEventListener('ui-click', (evt) => {
+        if (
+          !this.abilities.speedBoost1 &&
+          this.player.canBuy(this.abilitiesCosts.speedBoost1)
+        ) {
+          evt.target.setAttribute('purchased', true);
+          this.player.buy(this.abilitiesCosts.speedBoost1);
+          this.abilities.speedBoost1 = true;
+          this.player.runSpeed += this.player.runSpeed / 2;
+          this.player.walkSpeed += this.player.walkSpeed / 2;
+        }
+      });
+
+    shopWindow
+      .findElementById('speed-boost-ii')
+      ?.addEventListener('ui-click', (evt) => {
+        if (
+          !this.abilities.speedBoost2 &&
+          this.player.canBuy(this.abilitiesCosts.speedBoost2)
+        ) {
+          evt.target.setAttribute('purchased', true);
+          this.player.buy(this.abilitiesCosts.speedBoost2);
+          this.abilities.speedBoost2 = true;
+          this.player.runSpeed += this.player.runSpeed / 2;
+          this.player.walkSpeed += this.player.walkSpeed / 2;
         }
       });
 

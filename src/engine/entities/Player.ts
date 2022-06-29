@@ -27,25 +27,25 @@ export class Player extends Entity {
   public jumpAmount = 7;
 
   public health = 100;
-  private hpMax = 100;
+  public hpMax = 100;
 
   public stamina = 1000;
-  private stamMax = 1000;
+  public stamMax = 1000;
 
   private particles: Particles[] = [];
 
-  private runSpeed = 5;
-  private walkSpeed = 3;
+  public runSpeed = 5;
+  public walkSpeed = 3;
 
   public fruit: Record<FruitType, number> = {
-    apple: 0,
-    bananas: 0,
-    cherries: 0,
-    kiwi: 0,
-    melon: 0,
-    orange: 0,
-    pineapple: 0,
-    strawberry: 0
+    apple: 999,
+    bananas: 999,
+    cherries: 999,
+    kiwi: 999,
+    melon: 999,
+    orange: 999,
+    pineapple: 999,
+    strawberry: 999
   };
 
   constructor(events: Events) {

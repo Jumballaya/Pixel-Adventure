@@ -34,6 +34,7 @@ export class CanvasElement {
   }
 
   public draw(ctx: CanvasRenderingContext2D, drawBox = false) {
+    if (!this.visible || this.disabled) return;
     if (this.visible && !this.disabled) {
       this.background.draw(ctx, this.position);
     }
@@ -329,7 +330,7 @@ export class CanvasElement {
   }
 
   public getAttribute<T = unknown>(key: string): T | undefined {
-    return this.attributeList.get('key') as T | undefined;
+    return this.attributeList.get(key) as T | undefined;
   }
 
   public setAttribute(key: string, value: unknown) {

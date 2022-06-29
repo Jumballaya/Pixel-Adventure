@@ -8,10 +8,10 @@ export class Vendor extends Entity {
   private showHelperMessage = false;
   private shopIsOpen = false;
 
-  constructor() {
+  constructor(pos: DOMPoint) {
     const sprite = new Sprite(idlePng, 11);
     const hitbox = new HitBox(32, 38, new DOMPoint(0, 0), [-4, -5], '#ff0000');
-    super(new DOMPoint(64, 768 - 40), sprite, hitbox);
+    super(pos, sprite, hitbox);
     this.facing = false;
     this.sprite.flip(true);
   }
@@ -27,12 +27,15 @@ export class Vendor extends Entity {
     const shopWindow = ui.document.body.findElementById('vendor-shop');
     if (vendorDialog) {
       if (this.showHelperMessage) {
+        vendorDialog.disabled = false;
+        vendorDialog.visible = true;
         vendorDialog.position = new DOMPoint(
           this.position.x - 64,
           this.position.y - 36
         );
       } else {
-        vendorDialog.position = new DOMPoint(-500, -500);
+        vendorDialog.disabled = true;
+        vendorDialog.visible = false;
       }
     }
 

@@ -36,7 +36,6 @@ export class TileMapper {
     worldBox: HitBox,
     drawBox = false
   ) {
-    const tag = (s: string): number => parseInt(s.split(':')[0]) || 0;
     for (const [name, data] of this.map) {
       this.drawLayer(name, data, ctx, worldBox, drawBox);
     }
