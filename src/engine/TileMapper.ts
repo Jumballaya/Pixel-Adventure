@@ -1,37 +1,28 @@
 import { TileMap } from './TileMap';
 import { HitBox } from './HitBox';
-import { MapData } from './interfaces/map-data.interface';
 import { Entity } from './entities/Entity';
+import { TiledJson } from './interfaces/tiled/tiled-json.interface';
+import { Ctor } from './interfaces/ctor.interface';
 
 export class TileMapper {
   private height: number;
   private width: number;
   private position: DOMPoint;
-  private tileMaps: Map<string, TileMap>;
   private hitBoxes: Map<string, Array<HitBox>>;
   private tileDimensions: { width: number; height: number };
-  private entities: Map<string, (pos: DOMPoint) => Entity>;
   private instances: Array<Entity> = [];
-  private map: Map<
-    string,
-    Array<
-      Array<{
-        map: string;
-        tile?: DOMPoint;
-        entity?: boolean;
-        instance?: Entity;
-      } | null>
-    >
-  >;
-  private paused = false;
+  private map: Map<string, number[]>;
 
-  constructor(data: MapData) {
-    this.position = data.position;
-    this.tileMaps = data.tileMaps;
-    this.hitBoxes = data.hitboxes;
-    this.tileDimensions = data.tileDimensions;
-    this.entities = data.entities;
-    this.map = data.map;
+  constructor(
+    data: TiledJson,
+    private tileMaps: Map<string, TileMap>,
+    private classMap: Map<string, Ctor>
+  ) {
+    this.position = new DOMPoint(0, 0);
+    this.hitBoxes = this.extractHitboxes(data);
+    this.tileDimensions = { height: 16, width: 16 };
+    this.instances = this.extractInstances(data);
+    this.map = this.extractMap(data);
     this.width = data.width;
     this.height = data.height;
   }
@@ -46,11 +37,8 @@ export class TileMapper {
     drawBox = false
   ) {
     const tag = (s: string): number => parseInt(s.split(':')[0]) || 0;
-    const layers = Array.from(this.map)
-      .sort((a, b) => tag(a[0]) - tag(b[0]))
-      .map((l) => l[0]);
-    for (const layer of layers) {
-      this.drawLayer(layer, ctx, worldBox, drawBox);
+    for (const [name, data] of this.map) {
+      this.drawLayer(name, data, ctx, worldBox, drawBox);
     }
     for (const instance of this.instances) {
       instance.draw(ctx, drawBox);
@@ -68,12 +56,11 @@ export class TileMapper {
 
   public drawLayer(
     name: string,
+    map: number[],
     ctx: CanvasRenderingContext2D,
     worldBox: HitBox,
     drawBox = false
   ) {
-    const map = this.map.get(name);
-    if (!map) return;
     const tileDim = this.tileDimensions;
     const start = this.position;
 
@@ -81,26 +68,22 @@ export class TileMapper {
       const yOffset = start.y + tileDim.height * y;
       for (let x = 0; x < this.width; x++) {
         const xOffset = start.x + tileDim.width * x;
+        const index = y * this.width + x;
         const pos = new DOMPoint(xOffset, yOffset);
-        if (map[y]?.[x]) {
+        if (map[index]) {
           const hitBox = new HitBox(tileDim.width, tileDim.height, pos);
           if (drawBox) {
             hitBox.draw(ctx);
           }
           if (worldBox.collided(hitBox)) {
-            const data = map[y][x];
-            if (data && data.tile) {
-              const tiles = this.tileMaps.get(data.map);
-              tiles?.drawTile(ctx, pos, data.tile);
-            } else if (data && data.entity) {
-              const entity = this.entities.get(data.map);
-              if (entity && !data.instance) {
-                data.instance = entity(pos);
-                this.instances.push(data.instance);
-              }
-              if (data.instance) {
-                data.instance.setPosition(pos);
-              }
+            const tiles = this.tileMaps.get(name);
+            if (tiles) {
+              const data = map[index];
+              const [mW, mH] = tiles?.getCount();
+              const x = data % mW;
+              const y = Math.floor(data / mW);
+              const tile = new DOMPoint(x - 1, y);
+              tiles.drawTile(ctx, pos, tile);
             }
           }
         }
@@ -139,6 +122,11 @@ export class TileMapper {
         hb.setPosition(pos);
       });
     });
+    this.instances.forEach((inst: Entity) => {
+      const pos = inst.position;
+      pos.x -= n;
+      inst.setPosition(pos);
+    });
   }
 
   public shiftRight(n: number) {
@@ -149,6 +137,11 @@ export class TileMapper {
         pos.x += n;
         hb.setPosition(pos);
       });
+    });
+    this.instances.forEach((inst: Entity) => {
+      const pos = inst.position;
+      pos.x += n;
+      inst.setPosition(pos);
     });
   }
 
@@ -161,6 +154,11 @@ export class TileMapper {
         hb.setPosition(pos);
       });
     });
+    this.instances.forEach((inst: Entity) => {
+      const pos = inst.position;
+      pos.y -= n;
+      inst.setPosition(pos);
+    });
   }
 
   public shiftDown(n: number) {
@@ -172,18 +170,26 @@ export class TileMapper {
         hb.setPosition(pos);
       });
     });
+    this.instances.forEach((inst: Entity) => {
+      const pos = inst.position;
+      pos.y += n;
+      inst.setPosition(pos);
+    });
   }
 
   public moveTo(pos: DOMPoint) {
     const oldPos = this.position;
     this.position = pos;
+    const diffX = oldPos.x - pos.x;
+    const diffY = oldPos.y - pos.y;
     this.hitBoxes.forEach((hbs) => {
       hbs.forEach((hb) => {
-        const diffX = oldPos.x - pos.x;
-        const diffY = oldPos.y - pos.y;
         const hbPos = new DOMPoint(diffX + pos.x, diffY + pos.y);
         hb.setPosition(hbPos);
       });
+    });
+    this.instances.forEach((inst: Entity) => {
+      inst.setPosition(new DOMPoint(diffX + pos.x, diffY + pos.y));
     });
   }
 
@@ -191,13 +197,54 @@ export class TileMapper {
     for (const inst of this.instances) {
       inst.pause();
     }
-    this.paused = true;
   }
 
   public unpause() {
     for (const inst of this.instances) {
       inst.unpause();
     }
-    this.paused = false;
+  }
+
+  private extractHitboxes(json: TiledJson): Map<string, HitBox[]> {
+    const ret: Map<string, HitBox[]> = new Map();
+    for (const layer of json.layers) {
+      if (layer.class === 'Hitbox' && layer.objects) {
+        const boxes: HitBox[] = [];
+        for (const obj of layer.objects) {
+          const { x, y, height, width } = obj;
+          const hb = new HitBox(width, height, new DOMPoint(x, y));
+          boxes.push(hb);
+        }
+        ret.set(layer.name, boxes);
+      }
+    }
+
+    return ret;
+  }
+
+  private extractMap(json: TiledJson): Map<string, number[]> {
+    const maps: Map<string, number[]> = new Map();
+
+    for (const layer of json.layers) {
+      if (layer.data) {
+        maps.set(layer.name, layer.data);
+      }
+    }
+
+    return maps;
+  }
+
+  private extractInstances(json: TiledJson): Entity[] {
+    const instances: Entity[] = [];
+    for (const layer of json.layers) {
+      const ctor = this.classMap.get(layer.name);
+      if (ctor && layer.objects) {
+        for (const obj of layer.objects) {
+          const { x, y } = obj;
+          instances.push(new ctor(new DOMPoint(x, y), obj.name) as Entity);
+        }
+      }
+    }
+    return instances;
   }
 }

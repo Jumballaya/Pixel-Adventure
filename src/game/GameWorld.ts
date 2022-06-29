@@ -7,9 +7,73 @@ import { GravitySystem } from '../engine/systems/GravitySystem';
 import { TileMapper } from '../engine/TileMapper';
 import { CanvasUI } from '../engine/ui/CanvasUI';
 import { GameMap } from './GameMap';
+import { Cloud } from '../engine/entities/Cloud';
 import { createUi } from './ui';
 import { shopWindow } from './ui/shop-window';
 import { vendorDialog } from './ui/vendor-dialog';
+
+const clouds = (() => {
+  const randomCloud = () => {
+    const x = 960 + Math.random() * 430;
+    const y = 120 - Math.random() * 120;
+    const cloud = new Cloud(new DOMPoint(x, y));
+    cloud.velocity.x -= 0.5 + Math.random();
+    return cloud;
+  };
+
+  const clouds = Array.from(new Array(Math.ceil(Math.random() * 4))).map(
+    randomCloud
+  );
+
+  const randomAdd = () => {
+    if (Date.now() % Math.ceil(Math.random() * 215) === 0) {
+      clouds.push(randomCloud());
+      clouds.sort((a, b) => a.position.x - b.position.x);
+
+      if (clouds[0].position.x < -200) clouds.shift();
+    }
+
+    setTimeout(() => {
+      randomAdd();
+    }, 50);
+  };
+
+  randomAdd();
+
+  const update = () => {
+    clouds.forEach((c) => {
+      c.position.x += c.velocity.x;
+    });
+  };
+
+  const shiftLeft = (amount: number) => {
+    clouds.forEach((c) => {
+      c.position.x -= amount;
+    });
+  };
+
+  const shiftRight = (amount: number) => {
+    clouds.forEach((c) => {
+      c.position.x += -amount;
+    });
+  };
+
+  const draw = (ctx: CanvasRenderingContext2D, drawBox = false) => {
+    clouds.forEach((c) => {
+      c.draw(ctx, drawBox);
+    });
+  };
+
+  return {
+    update,
+    shiftLeft,
+    shiftRight,
+    draw
+  };
+})();
+
+const cloud = new Cloud(new DOMPoint(500, 64));
+cloud.velocity.x -= 0.5;
 
 export class GameWorld {
   private drawBox = false;
@@ -44,7 +108,7 @@ export class GameWorld {
       new DOMPoint(4, 4),
       [4, 4]
     );
-    this.gameMap = GameMap(this.width, this.height);
+    this.gameMap = GameMap;
 
     this.worldBoxLeft = new HitBox(
       256,
@@ -71,8 +135,8 @@ export class GameWorld {
       }
     });
 
-    this.ui.document.body.appendChild(vendorDialog);
-    this.ui.document.body.appendChild(shopWindow);
+    // this.ui.document.body.appendChild(vendorDialog);
+    // this.ui.document.body.appendChild(shopWindow);
 
     shopWindow
       .findElementById('triple-jump')
@@ -114,6 +178,7 @@ export class GameWorld {
     if (!this.paused) {
       if (
         this.player.hitbox.collided(this.worldBoxRight) &&
+        this.gameMap.getPosition().x > -(this.width * 1.5) &&
         this.player.velocity.x > 0
       ) {
         this.gameMap.shiftLeft(this.player.velocity.x);
@@ -121,6 +186,7 @@ export class GameWorld {
         this.player.setPosition(
           new DOMPoint(oldPos.x - this.player.velocity.x, oldPos.y)
         );
+        clouds.shiftLeft(this.player.velocity.x);
       }
       if (
         this.player.hitbox.collided(this.worldBoxLeft) &&
@@ -132,6 +198,7 @@ export class GameWorld {
         this.player.setPosition(
           new DOMPoint(oldPos.x - this.player.velocity.x, oldPos.y)
         );
+        clouds.shiftRight(this.player.velocity.x);
       }
     }
 
@@ -172,6 +239,8 @@ export class GameWorld {
 
         ent.update(this.worldBox, this.ui);
       }
+
+      clouds.update();
     }
 
     // UI Update
@@ -228,6 +297,7 @@ export class GameWorld {
     }
 
     this.player.draw(this.ctx, this.drawBox);
+    clouds.draw(this.ctx);
     this.ui.draw(this.drawBox);
   }
 

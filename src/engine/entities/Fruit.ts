@@ -43,7 +43,7 @@ const sprites: Record<FruitType, () => Sprite> = {
 };
 
 export class Fruit extends Entity {
-  constructor(public type: FruitType, position: DOMPoint) {
+  constructor(position: DOMPoint, public type: FruitType) {
     super(position, sprites[type](), new HitBox(32, 32, position));
   }
 }
