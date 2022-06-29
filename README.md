@@ -2,6 +2,15 @@
 
 Visual Assets by Pixel Frog -- https://pixelfrog-assets.itch.io/pixel-adventure-1
 
+## Progress Report #5
+
+Now making maps with Tiled to allow for easier/quicker map iterations. Also finished the starter level and added the door to the next zone.
+
+Next steps: Still need UX updates for the vendor menu as well as a pause menu. Still need to add more enemies to spawn in.
+
+![Fifth Screenshot](/pics/fifth-screenshot.png)
+
+
 ## Progress Report #4
 
 Player can now purchase new abilities in exchange for fruit. There is also a slime enemy that deals damage to the player on contact.
