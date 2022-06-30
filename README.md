@@ -2,6 +2,15 @@
 
 Visual Assets by Pixel Frog -- https://pixelfrog-assets.itch.io/pixel-adventure-1
 
+## Progress Report #7
+
+Finally added pause menu. 
+
+Next steps: Create the next zone and add more monsters.
+
+![Seventh Screenshot](/pics/seventh-screenshot.png)
+
+
 
 ## Progress Report #6
 
