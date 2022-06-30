@@ -10,6 +10,7 @@ import { GameMap } from './GameMap';
 import { createUi } from './ui';
 import { shopWindow } from './ui/shop-window';
 import { vendorDialog } from './ui/vendor-dialog';
+import { pauseMenu } from './ui/pause-menu';
 import { clouds } from './clouds';
 
 export class GameWorld {
@@ -98,6 +99,7 @@ export class GameWorld {
 
     this.ui.document.body.appendChild(vendorDialog);
     this.ui.document.body.appendChild(shopWindow);
+    this.ui.document.body.appendChild(pauseMenu);
 
     shopWindow
       .findElementById('triple-jump')
@@ -197,8 +199,8 @@ export class GameWorld {
           evt.target.setAttribute('purchased', true);
           this.player.buy(this.abilitiesCosts.speedBoost1);
           this.abilities.speedBoost1 = true;
-          this.player.runSpeed += this.player.runSpeed / 2;
-          this.player.walkSpeed += this.player.walkSpeed / 2;
+          this.player.runSpeed += this.player.runSpeed / 4;
+          this.player.walkSpeed += this.player.walkSpeed / 4;
         }
       });
 
@@ -212,8 +214,8 @@ export class GameWorld {
           evt.target.setAttribute('purchased', true);
           this.player.buy(this.abilitiesCosts.speedBoost2);
           this.abilities.speedBoost2 = true;
-          this.player.runSpeed += this.player.runSpeed / 2;
-          this.player.walkSpeed += this.player.walkSpeed / 2;
+          this.player.runSpeed += this.player.runSpeed / 4;
+          this.player.walkSpeed += this.player.walkSpeed / 4;
         }
       });
 
@@ -288,7 +290,7 @@ export class GameWorld {
               !ent.shopOpen()
             ) {
               ent.openShop();
-              this.pause();
+              this.pause(false);
             }
           } else {
             ent.closeShop();
@@ -369,15 +371,21 @@ export class GameWorld {
     this.ui.draw(this.drawBox);
   }
 
-  public pause() {
+  public pause(showMenu = true) {
     this.paused = true;
     this.player.pause();
     this.gameMap.pause();
+    if (showMenu) {
+      const pauseMenu = this.ui.document.body.findElementById('pause-menu');
+      if (pauseMenu) pauseMenu.visible = true;
+    }
   }
 
   public unpause() {
     this.paused = false;
     this.player.unpause();
     this.gameMap.unpause();
+    const pauseMenu = this.ui.document.body.findElementById('pause-menu');
+    if (pauseMenu) pauseMenu.visible = false;
   }
 }

@@ -29,13 +29,13 @@ export class Player extends Entity {
   public health = 100;
   public hpMax = 100;
 
-  public stamina = 1000;
-  public stamMax = 1000;
+  public stamina = 100;
+  public stamMax = 100;
 
   private particles: Particles[] = [];
 
-  public runSpeed = 5;
-  public walkSpeed = 3;
+  public runSpeed = 3.5;
+  public walkSpeed = 1.5;
 
   public fruit: Record<FruitType, number> = {
     apple: 999,
